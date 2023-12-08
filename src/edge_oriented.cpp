@@ -4,17 +4,17 @@
 #include <unordered_map>
 #include "set_operation.h"
 
-extern const int K, L;
+extern const int K, L; /*这两行声明了外部常量K、L和N，这些常量可能在类的其他部分或全局范围内定义。*/
 extern unsigned long long N;
 
-EBBkC_Graph_t::EBBkC_Graph_t() = default;
+EBBkC_Graph_t::EBBkC_Graph_t() = default; /*这是类的默认构造函数的定义，使用默认关键字表示使用编译器生成的默认构造函数。*/
 
-EBBkC_Graph_t::~EBBkC_Graph_t() {
+EBBkC_Graph_t::~EBBkC_Graph_t() { /*类的析构函数的开始，用于释放对象占用的资源。*/
     int i;
 
-    delete [] edges;
+    delete [] edges; /*释放edges数组占用的内存。*/
 
-    if (T) {
+    if (T) { /*检查成员变量T是否为非空，如果是，则遍历并删除每个子数组，然后删除数组T本身。*/
         for (i = 0; i < e_size; i++) delete [] T[i];
         delete [] T;
     }
@@ -369,129 +369,125 @@ void EBBkC_Graph_t::truss_decompose(const char* w_file_name) { /*该函数用于
 }
 
 
-void EBBkC_Graph_t::build_from_G() {
-    int i;
+void EBBkC_Graph_t::build_from_G() { /*它的主要目的是为一个图数据结构分配必要的内存，并初始化一些变量。*/
+    int i; /*声明一个整型变量i，用于后续的循环。*/
 
-    sub_v = new int* [K + 1];
+    sub_v = new int* [K + 1]; /*为sub_v和sub_e分配内存，它们是指向指针的指针，用于存储子图和子边的信息。*/
 
     sub_e = new int* [K + 1];
 
-    sub_e_size = new int [K + 1];
+    sub_e_size = new int [K + 1]; /*它们分别存储子边和子顶点的数量。*/
 
     sub_v_size = new int [K + 1];
-
+    /*使用循环为sub_v的前K个子数组分配内存。每个子数组的大小基于truss_num或v_size*/
     for (i = 0; i < K; i++) sub_v[i] = new int [truss_num + 1];
     sub_v[K] = new int [v_size];
-
+    /*使用循环为sub_e的前K个子数组分配内存。每个子数组的大小基于truss_num或e_size。*/
     for (i = 0; i < K; i++) sub_e[i] = new int [truss_num * (truss_num - 1) / 2];
     sub_e[K] = new int [e_size];
-
+    /*初始化sub_v_size[K]和sub_e_size[K]，并将所有的顶点和边添加到相应的子图和子边中。*/
     sub_v_size[K] = 0;
     for (i = 0; i < v_size; i++) sub_v[K][sub_v_size[K]++] = i;
 
     sub_e_size[K] = 0;
     for (i = 0; i < e_size; i++) sub_e[K][sub_e_size[K]++] = i;
 
-    lab = new int [v_size];
-    for (i = 0; i < v_size; i++) lab[i] = K;
+    lab = new int [v_size]; /*为顶点标签数组分配内存。*/
+    for (i = 0; i < v_size; i++) lab[i] = K; /*使用循环初始化所有顶点的标签为K。*/
 
-    DAG_deg = new int* [K + 1];
-    for (i = 0; i <= K; i++) DAG_deg[i] = new int [v_size];
+    DAG_deg = new int* [K + 1]; /*为DAG（有向无环图）的度数数组分配内存。*/
+    for (i = 0; i <= K; i++) DAG_deg[i] = new int [v_size]; /* 使用循环为DAG度数数组的每一个元素分配内存。*/
 
-    G_deg = new int* [K + 1];
-    for (i = 0; i <= K; i++) G_deg[i] = new int [v_size];
+    G_deg = new int* [K + 1]; /*为G的度数数组分配内存。*/
+    for (i = 0; i <= K; i++) G_deg[i] = new int [v_size]; /*使用循环为G度数数组的每一个元素分配内存。*/
 
-    col = new int [v_size];
+    col = new int [v_size]; /*为颜色数组分配内存。*/
+ 
+    DAG_adj = new int* [v_size]; /*为DAG的邻接数组分配内存。*/
+    for (i = 0; i < v_size; i++) DAG_adj[i] = new int [truss_num + 1]; /*使用循环为DAG邻接数组的每一个元素分配内存。*/
 
-    DAG_adj = new int* [v_size];
-    for (i = 0; i < v_size; i++) DAG_adj[i] = new int [truss_num + 1];
+    G_adj = new int* [v_size]; /*使用循环为G邻接数组的每一个元素分配内存。*/
+    for (i = 0; i < v_size; i++) G_adj[i] = new int  [truss_num + 1]; /*为used数组分配内存，它是一个布尔型数组，用于跟踪哪些顶点或边已被使用。*/
 
-    G_adj = new int* [v_size];
-    for (i = 0; i < v_size; i++) G_adj[i] = new int  [truss_num + 1];
-
-    used = new bool* [K + 1];
+    used = new bool* [K + 1]; /*使用循环初始化used数组的每一个元素。*/
     for (i = 0; i <= K; i++) used[i] = new bool [v_size + 1]();
 
-    v_lab = new int [v_size];
+    v_lab = new int [v_size]; /*为顶点标签数组和边标签数组分配内存，并使用循环进行初始化。*/
     for (i = 0; i < v_size; i++) v_lab[i] = K;
 
     e_lab = new int [e_size];
     for (i = 0; i < e_size; i++) e_lab[i] = K;
 
-    out_v_size = new int* [K + 1];
+    out_v_size = new int* [K + 1];/*为输出顶点大小和输出边大小数组分配内存。*/
     for (i = 0; i <= K; i++) out_v_size[i] = new int [e_size];
 
-    out_e_size = new int* [K + 1];
+    out_e_size = new int* [K + 1]; /*使用循环为输出顶点大小和输出边大小数组的每一个元素分配内存。*/
     for (i = 0; i <= K; i++) out_e_size[i] = new int [e_size];
 
-    F = new int [truss_num + 1];
+    F = new int [truss_num + 1]; /*为F和P数组分配内存，它们可能是用于存储某种临时信息的数组。*/
 
     P = new int [truss_num + 1];
 
-    lack_size = new int [v_size];
+    lack_size = new int [v_size]; /*为lack_size数组分配内存，它可能用于跟踪每个顶点的某种缺乏的数量。*/
 
-    lack = new int* [v_size];
-    for (i = 0; i < v_size; i++) lack[i] = new int [L + 1];
+    lack = new int* [v_size]; /*为lack数组分配内存，它是一个整数指针数组，可能用于存储与每个顶点相关的某种缺乏的信息。*/
+    for (i = 0; i < v_size; i++) lack[i] = new int [L + 1]; /*使用循环为lack数组的每一个元素分配内存。*/
 
-    lev = new int [v_size]();
+    lev = new int [v_size](); /*为lev数组分配内存并使用括号初始化所有元素为0，它可能用于存储每个顶点的级别信息。*/
 
-    loc = new int [v_size];
+    loc = new int [v_size]; /*为loc数组分配内存，它可能用于存储每个顶点的位置信息。*/
 }
 
 
-void EBBkC_Graph_t::EBBkC(int l, unsigned long long *cliques) {
-    int i, j, k, u, e, e_, _e, end;
-
+void EBBkC_Graph_t::EBBkC(int l, unsigned long long *cliques) { /*接受两个参数：一个整数l和一个指向无符号长长整型的指针cliques。*/
+    int i, j, k, u, e, e_, _e, end; /*声明了一些整型变量，用于后续的循环和临时存储。*/
+    /*如果子图的顶点数量小于l或者子图的边数量小于l * (l - 1) / 2（即l个顶点可以形成的最大边数），则函数直接返回。*/
     if (sub_v_size[l] < l || sub_e_size[l] < l * (l - 1) / 2) return;
 
-    if (l == K) {
-        if (K == 3) {
-            for (i = 0; i < sub_e_size[l]; i++) {
+    if (l == K) { /*再次判断，如果l等于K，则执行以下的代码块。*/
+        if (K == 3) { /*如果K等于3，执行以下的代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*外层循环遍历所有的子边，内层循环根据每条边的T_size来增加cliques的计数。*/
                 e = sub_e[l][i];
-
                 for (j = 0; j < T_size[e]; j++) {
                     (*cliques)++;
                 }
             }
         }
-        else if (K == 4) {
-            for (i = 0; i < sub_e_size[l]; i++) {
+        else if (K == 4) { /*如果K等于4，执行以下的代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*与上面的代码块类似，但是这次是根据每条边的C_size来增加cliques的计数。*/
                 e = sub_e[l][i];
-
                 for (j = 0; j < C_size[e]; j++) {
                     (*cliques)++;
                 }
             }
         }
-        else {
-
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
-
-                sort(T[e], T[e] + T_size[e]);
-                sort(C[e], C[e] + C_size[e]);
+        else { /*与上面的代码块类似，但是这次是根据每条边的C_size来增加cliques的计数。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*遍历所有子图l中的边。*/
+                e = sub_e[l][i]; /*获取子图l中的第i条边，并将其存储在变量e中.*/
+                sort(T[e], T[e] + T_size[e]); /* 对边e对应的T数组进行排序。这里排序的是从T[e]开始到T[e] + T_size[e]的部分。*/
+                sort(C[e], C[e] + C_size[e]); /*对边e对应的C数组进行排序。这里排序的是从C[e]开始到C[e] + C_size[e]的部分。*/
             }
             
-            for (i = 0; i < sub_e_size[l]; i++) {
+            for (i = 0; i < sub_e_size[l]; i++) { /*遍历所有子图l中的边。*/
                 e = sub_e[l][i];
-
+                /*如果边e的T数组大小小于l-2或C数组大小小于(l-2)*(l-3)/2，则跳过此次循环。这是为了确保有足够的顶点和边来形成一个更小的K-Clique。*/
                 if (T_size[e] < l - 2 || C_size[e] < (l - 2) * (l - 3) / 2) continue;
 
-                sub_v_size[l - 2] = 0;
+                sub_v_size[l - 2] = 0; /*重置子图l-2的顶点数量。*/
 
-                for (j = 0; j < T_size[e]; j++) {
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历边e的T数组，并将顶点添加到子图l-2中。*/
                     u = T[e][j];
-                    sub_v[l - 2][sub_v_size[l - 2]++] = u;
+                    sub_v[l - 2][sub_v_size[l - 2]++] = u; /*将顶点u添加到子图l-2的顶点数组中，并递增顶点数量*/
                 }
 
-                sub_e_size[l - 2] = 0;
+                sub_e_size[l - 2] = 0; /*重置子图l-2的边数量。*/
 
-                for (j = 0; j < C_size[e]; j++) {
-                    e_ = C[e][j];
-                    sub_e[l - 2][sub_e_size[l - 2]++] = e_;
+                for (j = 0; j < C_size[e]; j++) { /*循环遍历边e的C数组，并将边添加到子图l-2中。*/
+                    e_ = C[e][j]; 
+                    sub_e[l - 2][sub_e_size[l - 2]++] = e_; /*将边e_添加到子图l-2的边数组中，并递增边的数量。*/
                 }
 
-                EBBkC(l - 2, cliques);
+                EBBkC(l - 2, cliques); /*对子图l-2递归调用EBBkC函数，以寻找更小的K-Clique。*/
 
             }
         }
@@ -500,170 +496,174 @@ void EBBkC_Graph_t::EBBkC(int l, unsigned long long *cliques) {
     }
 
     for (i = 0; i < sub_e_size[l]; i++) {
-        e = sub_e[l][i];
+        e = sub_e[l][i]; /*获取子图l中的第i条边，并将其存储在变量e中。*/
 
-        if (l == 3) {
+        if (l == 3) { /*判断当前处理的子图的大小是否为3。*/
+            /*如果子图大小为3，使用函数intersect_simd4x计算两个顶点集合的交集，并返回交集的大小。*/
             sub_v_size[l - 2] = intersect_simd4x(sub_v[l], sub_v_size[l], T[e], T_size[e], sub_v[l - 2]);
-            for (j = 0; j < sub_v_size[l - 2]; j++) {
-                (*cliques)++;
+            for (j = 0; j < sub_v_size[l - 2]; j++) { /*遍历上一步计算的交集结果。*/
+                (*cliques)++; /*对于交集中的每个顶点，增加cliques的计数。这表示找到了一个新的3-clique。*/
             }
         }
 
-        else if (l == 4) {
+        else if (l == 4) { /*判断当前处理的子图的大小是否为4。*/
+            /*如果子图大小为4，使用函数intersect_simd4x计算两个边集合的交集，并返回交集的大小。*/
              sub_e_size[l - 2] = intersect_simd4x(sub_e[l], sub_e_size[l], C[e], C_size[e], sub_e[l - 2]);
-             for (j = 0; j < sub_e_size[l - 2]; j++) {
-                (*cliques)++;
+             for (j = 0; j < sub_e_size[l - 2]; j++) { /*遍历上一步计算的交集结果。*/
+                (*cliques)++; /* 对于交集中的每条边，增加cliques的计数。这表示找到了一个新的4-clique。*/
              }
         }
 
-        else {
+        else { /* 如果子图的大小不是3或4，执行以下代码块。*/
+            /*计算子图l的顶点与边e的T数组的交集，结果存储在sub_v[l - 2]中。*/
             sub_v_size[l - 2] = intersect_simd4x(sub_v[l], sub_v_size[l], T[e], T_size[e], sub_v[l - 2]);
+            /*计算子图l的边与边e的C数组的交集，结果存储在sub_e[l - 2]中。*/
             sub_e_size[l - 2] = intersect_simd4x(sub_e[l], sub_e_size[l], C[e], C_size[e], sub_e[l - 2]);
-            EBBkC(l - 2, cliques);
+            EBBkC(l - 2, cliques); /*对更小的子图（大小为l-2）递归调用函数EBBkC以继续寻找cliques。*/
         }
     }
 }
 
 
-void EBBkC_Graph_t::EBBkC_plus(int l, unsigned long long *cliques) {
-    int c, i, j, k, e, e_, u, v, w, s, t, end, dist;
+void EBBkC_Graph_t::EBBkC_plus(int l, unsigned long long *cliques) { /*它接受两个参数：一个整数 l 和一个指向无符号长长整型的指针 cliques。*/
+    int c, i, j, k, e, e_, u, v, w, s, t, end, dist; /*声明了一系列整数变量，用于在函数内部进行各种计算。*/
 
-    if (sub_v_size[l] < l) return;
+    if (sub_v_size[l] < l) return; /*如果子图l的顶点数小于l，则函数立即返回。*/
 
-    if (l == K) {
-        if (K == 3) {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                 e = sub_e[l][i];
+    if (l == K) { /*判断当前处理的子图大小是否等于某个常数K。*/
+        if (K == 3) { /*如果K等于3，执行以下代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*遍历子图l中的所有边。*/
+                 e = sub_e[l][i]; /*获取子图l中的第i条边，并将其存储在变量e中。*/
 
-                 for (j = 0; j < T_size[e]; j++) {
-                    (*cliques)++;
+                 for (j = 0; j < T_size[e]; j++) { /*遍历与边e相关的T数组的所有元素。*/
+                    (*cliques)++; /*对于T数组中的每个元素，增加cliques的计数。*/
                  }
             }
         }
-        else if (K == 4) {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
+        else if (K == 4) { /*如果K等于4，执行以下代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*遍历子图l中的所有边。*/
+                e = sub_e[l][i]; /*获取子图l中的第i条边，并将其存储在变量e中。*/
 
-                for (j = 0; j < C_size[e]; j++) {
-                    (*cliques)++;
+                for (j = 0; j < C_size[e]; j++) { /*遍历与边e相关的C数组的所有元素。*/
+                    (*cliques)++; /*对于C数组中的每个元素，增加cliques的计数。*/
                 }
             }
         }
-        else {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
+        else { /*如果K既不等于3也不等于4，执行以下代码块:*/
+            for (i = 0; i < sub_e_size[l]; i++) {/*遍历子图l中的所有边。*/
+                e = sub_e[l][i]; /*获取子图l中的第i条边，并将其存储在变量e中。*/
+                /* 如果与边e相关的T数组的大小小于l-2，或者C数组的大小小于(l-2)*(l-3)/2，则跳过当前迭代。*/
+                if (T_size[e] < l - 2 || C_size[e] < (l - 2) * (l - 3) / 2) continue; 
 
-                if (T_size[e] < l - 2 || C_size[e] < (l - 2) * (l - 3) / 2) continue;
-
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    col[u] = 0;
-                    DAG_deg[0][u] = 0;
-                    G_deg[l - 2][u] = 0;
+                for (j = 0; j < T_size[e]; j++) { /*遍历与边e相关的T数组的所有元素。*/
+                    u = T[e][j]; /*获取T数组中的第j个元素，并将其存储在变量u中。*/
+                    col[u] = 0; /*将顶点u的col属性设置为0。*/
+                    DAG_deg[0][u] = 0; /*将顶点u的DAG_deg属性（似乎是一个二维数组）的第0行设置为0。*/
+                    G_deg[l - 2][u] = 0; /*将顶点u的G_deg属性的第l-2行设置为0。*/
                 }
 
-                for (j = 0; j < C_size[e]; j++) {
-                    e_ = C[e][j];
-                    s = edges[e_].s;
-                    t = edges[e_].t;
-                    G_adj[s][G_deg[l - 2][s]++] = t;
-                    G_adj[t][G_deg[l - 2][t]++] = s;
+                for (j = 0; j < C_size[e]; j++) { /*这个循环遍历与边e相关的C数组的所有元素。*/
+                    e_ = C[e][j]; /*获取C数组中的第j个元素，并将其存储在变量e_中。*/
+                    s = edges[e_].s; /*获取边e_的起始顶点，并将其存储在变量s中. */
+                    t = edges[e_].t; /*获取边e_的终止顶点，并将其存储在变量t中。*/
+                    G_adj[s][G_deg[l - 2][s]++] = t; /*在邻接矩阵G_adj中，将顶点s和t连接起来，并增加s的度数。*/
+                    G_adj[t][G_deg[l - 2][t]++] = s; /*在邻接矩阵G_adj中，将顶点t和s连接起来，并增加t的度数。*/
                 }
 
-                auto *list = new KeyVal_t [truss_num + 1];
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    list[j].key = u;
-                    list[j].val = G_deg[l - 2][u];
+                auto *list = new KeyVal_t [truss_num + 1]; /*动态分配一个KeyVal_t类型的数组，并将其指针存储在变量list中。*/
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历与边e相关的T数组的所有元素。*/
+                    u = T[e][j]; /*获取T数组中的第j个元素，并将其存储在变量u中。*/
+                    list[j].key = u; /*将u设置为list数组中第j个元素的键。*/
+                    list[j].val = G_deg[l - 2][u]; /* 将u的度数设置为list数组中第j个元素的值。*/
                 }
-                sort(list, list + T_size[e]);
+                sort(list, list + T_size[e]); /*对list数组进行排序，按照度数从小到大的顺序排列。*/
 
-                for (j = 0; j < T_size[e]; j++) {
-                    u = list[j].key;
-                    for (k = 0; k < G_deg[l - 2][u]; k++) {
-                        v = G_adj[u][k];
-                        used[K][col[v]] = true;
+                for (j = 0; j < T_size[e]; j++) { /*这个循环遍历排序后的list数组的所有元素。*/
+                    u = list[j].key; /*获取排序后list数组中的第j个元素的键，并将其存储在变量u中。*/
+                    /*接下来的几个循环和判断语句是用于对顶点进行着色（即分配一个唯一的颜色）的过程，其中使用了贪心算法的思想。*/
+                    for (k = 0; k < G_deg[l - 2][u]; k++) { /*这个内层循环遍历与顶点u相邻的所有顶点。*/
+                        v = G_adj[u][k]; /*获取u的邻接顶点v。*/
+                        used[K][col[v]] = true; /*将v的颜色标记为已使用。*/
                     }
-                    for (c = 1; used[K][c]; c++) ;
-                    col[u] = c;
-                    for (k = 0; k < G_deg[l - 2][u]; k++) {
-                        v = G_adj[u][k];
-                        used[K][col[v]] = false;
-                    }
-                }
-                delete [] list;
-
-                sub_v_size[l - 2] = 0;
-                dist = 0;
-
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    sub_v[l - 2][sub_v_size[l - 2]++] = u;
-                    if (!used[K][col[u]]) {
-                        used[K][col[u]] = true;
-                        dist++;
+                    for (c = 1; used[K][c]; c++) ; /*这个循环用于查找下一个可用的颜色。*/
+                    col[u] = c; /*将顶点u的颜色设置为c。*/
+                    for (k = 0; k < G_deg[l - 2][u]; k++) { /*内层循环再次遍历与顶点u相邻的所有顶点。*/
+                        v = G_adj[u][k]; /*获取u的邻接顶点v。*/
+                        used[K][col[v]] = false; /*将v的颜色标记为未使用。*/
                     }
                 }
+                delete [] list; /*释放之前动态分配的list数组的内存。*/
 
-                if (dist >= l - 2) {
-                    sort(sub_v[l - 2], sub_v[l - 2] + sub_v_size[l - 2]);
+                sub_v_size[l - 2] = 0; /* 将sub_v_size数组中索引为l - 2的元素设置为0，表示子图中顶点的数量为0。*/
+                dist = 0; /* 将变量dist设置为0，用于记录后续处理中着色顶点的数量。*/
 
-                    sub_e_size[l - 2] = 0;
-                    for (j = 0; j < C_size[e]; j++) {
-                        e_ = C[e][j];
-                        sub_e[l - 2][sub_e_size[l - 2]++] = e_;
-                        s = edges[e_].s;
-                        t = edges[e_].t;
-                        edges[e_].s = (col[s] > col[t]) ? s : t;
-                        edges[e_].t = (col[s] > col[t]) ? t : s;
-                        s = edges[e_].s;
-                        t = edges[e_].t;
-                        DAG_adj[s][DAG_deg[0][s]++] = t;
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历与边e相关的T数组的所有元素。*/
+                    u = T[e][j]; /*获取T数组中的第j个元素，并将其存储在变量u中。*/
+                    sub_v[l - 2][sub_v_size[l - 2]++] = u; /*将顶点u添加到sub_v数组中，并增加sub_v_size[l - 2]的值。*/
+                    if (!used[K][col[u]]) { /*判断顶点u的颜色是否已被使用。*/
+                        used[K][col[u]] = true; /* 如果顶点u的颜色未被使用，则将其标记为已使用。*/
+                        dist++; /*增加着色顶点的数量。*/
+                    }
+                }
+
+                if (dist >= l - 2) { /*判断着色顶点的数量是否大于等于l - 2。*/
+                    sort(sub_v[l - 2], sub_v[l - 2] + sub_v_size[l - 2]); /* 如果条件满足，则对sub_v数组进行排序。*/
+
+                    sub_e_size[l - 2] = 0; /*将sub_e_size数组中索引为l - 2的元素设置为0，表示子图中边的数量为0。*/
+                    for (j = 0; j < C_size[e]; j++) { /*循环遍历与边e相关的C数组的所有元素。*/
+                        e_ = C[e][j];/*获取C数组中的第j个元素，并将其存储在变量e_中。*/
+                        sub_e[l - 2][sub_e_size[l - 2]++] = e_; /*将边e_添加到sub_e数组中，并增加sub_e_size[l - 2]的值。*/
+                        s = edges[e_].s; /* 获取边e_的起始顶点，并将其存储在变量s中。*/
+                        t = edges[e_].t; /*获取边e_的终止顶点，并将其存储在变量t中。*/
+                        edges[e_].s = (col[s] > col[t]) ? s : t; /*根据顶点的颜色对边的起始顶点和终止顶点进行排序。*/
+                        edges[e_].t = (col[s] > col[t]) ? t : s; /* 根据顶点的颜色对边的起始顶点和终止顶点进行排序。*/
+                        s = edges[e_].s; /*重新获取排序后的边的起始顶点，并将其存储在变量s中。*/
+                        t = edges[e_].t; /*重新获取排序后的边的终止顶点，并将其存储在变量t中。*/
+                        DAG_adj[s][DAG_deg[0][s]++] = t; /*将排序后的边添加到DAG的邻接矩阵中，并更新起始顶点的度数。*/
                     }
 
-                    for (j = 0; j < T_size[i]; j++) {
-                        u = T[e][j];
+                    for (j = 0; j < T_size[i]; j++) { /*循环遍历与边i相关的T数组的所有元素。*/
+                        u = T[e][j]; /*获取T数组中的第j个元素，并将其存储在变量u中。*/
                         // sorted array for SIMD usage, DAG_adj can be considered as const.
-                        sort(DAG_adj[u], DAG_adj[u] + DAG_deg[0][u]);
+                        sort(DAG_adj[u], DAG_adj[u] + DAG_deg[0][u]); /*对DAG邻接矩阵中与顶点u相关的边进行排序。注释提到这是为了SIMD
+                        （单指令多数据）的使用，说明排序后的数组可以提高某些处理效率。*/
                     }
 
-                    EBBkC_plus(l - 2, cliques);
+                    EBBkC_plus(l - 2, cliques); /*调用EBBkC_plus函数，参数为l - 2和cliques。*/
                 }
 
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    used[K][col[u]] = false;
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历与边e相关的T数组的所有元素。*/
+                    u = T[e][j]; /*获取T数组中的第j个元素，并将其存储在变量u中。*/
+                    used[K][col[u]] = false; /*将used数组中与顶点u的颜色相关的元素设置为false，表示该颜色现在未被使用。*/
                 }
             }
         }
-
         return;
     }
 
-    if (l == 1) {
-        for (i = 0; i < sub_v_size[l]; i++) {
-            (*cliques)++;
-        }
-
+    if (l == 1) { /*判断变量l是否等于1。*/
+        for (i = 0; i < sub_v_size[l]; i++) { /*如果l等于1，则执行这个循环，遍历子图顶点数组sub_v的所有元素。*/
+            (*cliques)++; /*对cliques指针指向的值进行自增操作。*/
+        }/*这段代码的目的是当l等于1时，对cliques指针指向的值进行自增操作，自增的次数为子图顶点数组sub_v的大小，然后函数返回。*/
         return;
     }
 
-    for (i = 0; i < sub_v_size[l]; i++) {
-        u = sub_v[l][i];
+    for (i = 0; i < sub_v_size[l]; i++) { /*循环遍历子图顶点数组sub_v的所有元素。*/
+        u = sub_v[l][i]; /*获取子图顶点数组sub_v的第i个元素，并将其存储在变量u中。*/
 
-        if (col[u] < l) continue;
-
+        if (col[u] < l) continue; /*判断顶点u的颜色是否小于l，如果是，则跳过当前循环的剩余部分，继续下一次循环。*/
+        /*调用intersect_simd4x函数，计算与顶点u相邻的顶点与子图顶点数组的交集，并将结果存储在sub_v[l - 1]中，同时更新sub_v_size[l - 1]的值。*/
         sub_v_size[l - 1] = intersect_simd4x(sub_v[l], sub_v_size[l], DAG_adj[u], DAG_deg[0][u], sub_v[l - 1]);
 
-        if (l == 2) {
-            for (j = 0; j < sub_v_size[l - 1]; j++) {
-                (*cliques)++;
+        if (l == 2) {/*判断变量l是否等于2。*/
+            for (j = 0; j < sub_v_size[l - 1]; j++) { /*如果l等于2，则执行这个循环，遍历交集数组sub_v[l - 1]的所有元素。*/
+                (*cliques)++; /* 对cliques指针指向的值进行自增操作。*/
             }
         }
 
-        else {
-            if (sub_v_size[l - 1] >= l - 1) {
-                EBBkC_plus(l - 1, cliques);
+        else { /*如果变量l不等于2，则执行这个else语句块。*/
+            if (sub_v_size[l - 1] >= l - 1) { /*判断交集数组sub_v[l - 1]的大小是否大于等于l - 1。*/
+                EBBkC_plus(l - 1, cliques); /* 如果条件满足，则调用EBBkC_plus函数，参数为l - 1和cliques。*/
             }
         }
     }
@@ -671,104 +671,104 @@ void EBBkC_Graph_t::EBBkC_plus(int l, unsigned long long *cliques) {
 
 
 void EBBkC_Graph_t::EBBkC_plus_plus(int l, unsigned long long *cliques) {
-    int c, i, j, k, p, e, e_, u, v, w, s, t, end, dist;
+    int c, i, j, k, p, e, e_, u, v, w, s, t, end, dist; /*声明了一系列整数变量，这些变量用于后续的循环和条件判断。*/
+    /*判断子图的顶点数组大小sub_v_size[l]是否小于l，或者子图的边数组大小sub_e_size[l]是否小于l * (l - 1) / 2。*/
+    if (sub_v_size[l] < l || sub_e_size[l] < l * (l - 1) / 2) return; /*如果任一条件满足，则函数直接返回。*/
 
-    if (sub_v_size[l] < l || sub_e_size[l] < l * (l - 1) / 2) return;
-
-    if (l == K) {
-        if (K == 3) {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
-                for (j = 0; j < T_size[e]; j++) {
-                    (*cliques)++;
+    if (l == K) { /*判断变量l是否等于类成员变量K。*/
+        if (K == 3) { /*如果K等于3，则执行下面的代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*循环遍历子图的边数组sub_e[l]的所有元素。*/
+                e = sub_e[l][i]; /*获取子图的边数组的第i个元素，并将其存储在变量e中。*/
+                for (j = 0; j < T_size[e]; j++) { /*对每条边e，循环遍历与该边相关的数组T[e]的所有元素。*/
+                    (*cliques)++; /*对指针cliques指向的值进行自增操作。*/
                 }
             }
         }
-        else if (K == 4) {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
-                for (j = 0; j < C_size[e]; j++) {
-                    (*cliques)++;
+        else if (K == 4) { /*如果上面的条件不满足且K等于4，则执行下面的代码块。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*循环遍历子图的边数组sub_e[l]的所有元素。*/
+                e = sub_e[l][i]; /*获取子图的边数组的第i个元素，并将其存储在变量e中。*/
+                for (j = 0; j < C_size[e]; j++) { /* 对每条边e，循环遍历与该边相关的数组C[e]的所有元素。*/
+                    (*cliques)++; /*对指针cliques指向的值进行自增操作。*/
                 }
             }
         }
-        else {
-            for (i = 0; i < sub_e_size[l]; i++) {
-                e = sub_e[l][i];
-
+        else {/*之前的代码段处理了K等于3和4的特殊情况，这个else语句块则处理其他情况，即K不等于3或4的情况。*/
+            for (i = 0; i < sub_e_size[l]; i++) { /*循环遍历子图的边数组sub_e[l]的所有元素。*/
+                e = sub_e[l][i]; /*获取子图的边数组的第i个元素，并将其存储在变量e中。*/
+                /*判断与边e相关的两个数组T[e]和C[e]的大小是否满足条件，如果不满足则跳过当前循环的剩余部分。*/
                 if (T_size[e] < l - 2 || C_size[e] < (l - 2) * (l - 3) / 2) continue;
-
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    col[u] = 0;
-                    DAG_deg[l - 2][u] = 0;
-                    G_deg[l - 2][u] = 0;
+                
+                for (j = 0; j < T_size[e]; j++) { /*对每条边e，循环遍历与该边相关的数组T[e]的所有元素。*/
+                    u = T[e][j]; /*获取数组T[e]的第j个元素，并将其存储在变量u中。*/
+                    col[u] = 0; /*将顶点u的颜色设置为0。*/
+                    DAG_deg[l - 2][u] = 0; /* 将顶点u在DAG（有向无环图）中的度设置为0。*/
+                    G_deg[l - 2][u] = 0; /*将顶点u在图G中的度设置为0。*/
                 }
 
-                for (j = 0; j < C_size[e]; j++) {
-                    e_ = C[e][j];
-                    s = edges[e_].s;
-                    t = edges[e_].t;
-                    G_adj[s][G_deg[l - 2][s]++] = t;
-                    G_adj[t][G_deg[l - 2][t]++] = s;
+                for (j = 0; j < C_size[e]; j++) { /*对每条边e，循环遍历与该边相关的数组C[e]的所有元素。*/
+                    e_ = C[e][j]; /*获取数组C[e]的第j个元素，并将其存储在变量e_中。*/
+                    s = edges[e_].s; /*获取边e_的起点，并将其存储在变量s中。*/
+                    t = edges[e_].t; /*获取边e_的终点，并将其存储在变量t中。*/
+                    G_adj[s][G_deg[l - 2][s]++] = t; /*在图G的邻接矩阵中，将顶点s和顶点t连接起来，并更新顶点s的度。*/
+                    G_adj[t][G_deg[l - 2][t]++] = s; /*在图G的邻接矩阵中，将顶点t和顶点s连接起来，并更新顶点t的度。*/
                 }
 
-                auto *list = new KeyVal_t [truss_num + 1];
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    list[j].key = u;
-                    list[j].val = G_deg[l - 2][u];
+                auto *list = new KeyVal_t [truss_num + 1]; /*: 动态分配了一个KeyVal_t类型的数组list，大小为truss_num + 1。*/
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历与边e相关的数组T[e]的所有元素。*/
+                    u = T[e][j]; /*获取数组T[e]的第j个元素，并将其存储在变量u中。*/
+                    list[j].key = u; /*将顶点u存储在list数组的第j个元素的键（key）字段中。*/
+                    list[j].val = G_deg[l - 2][u]; /*获取顶点u在图G中的度，并将其存储在list数组的第j个元素的值（val）字段中。*/
                 }
-                sort(list, list + T_size[e]);
+                sort(list, list + T_size[e]); /*对list数组进行排序，排序的依据是键值对中的键（key）。*/
 
-                for (j = 0; j < T_size[e]; j++) {
-                    u = list[j].key;
-                    for (k = 0; k < G_deg[l - 2][u]; k++) {
-                        v = G_adj[u][k];
-                        used[K][col[v]] = true;
+                for (j = 0; j < T_size[e]; j++) { /*再次循环遍历与边e相关的数组T[e]的所有元素，但这次是通过已排序的list数组进行。*/
+                    u = list[j].key; /*获取已排序的list数组的第j个元素的键（key）字段，并将其存储在变量u中。*/
+                    for (k = 0; k < G_deg[l - 2][u]; k++) { /*循环遍历与顶点u相邻的所有顶点。*/
+                        v = G_adj[u][k]; /*获取顶点u的第k个相邻顶点，并将其存储在变量v中。*/
+                        used[K][col[v]] = true; /*将二维数组used的对应位置设置为true，表示该顶点已被使用或访问过。*/
                     }
-                    for (c = 1; used[K][c]; c++) ;
-                    col[u] = c;
-                    for (k = 0; k < G_deg[l - 2][u]; k++) {
-                        v = G_adj[u][k];
-                        used[K][col[v]] = false;
-                    }
-                }
-                delete [] list;
-
-                sub_v_size[l - 2] = 0;
-                dist = 0;
-
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    sub_v[l - 2][sub_v_size[l - 2]++] = u;
-                    if (!used[K][col[u]]) {
-                        used[K][col[u]] = true;
-                        dist++;
+                    for (c = 1; used[K][c]; c++) ; /*查找第一个未被使用的颜色。*/
+                    col[u] = c; /*将顶点u的颜色设置为找到的第一个未被使用的颜色。*/
+                    for (k = 0; k < G_deg[l - 2][u]; k++) { /*再次循环遍历与顶点u相邻的所有顶点。*/
+                        v = G_adj[u][k]; /*获取顶点u的第k个相邻顶点，并将其存储在变量v中。*/
+                        used[K][col[v]] = false; /*将二维数组used的对应位置设置为false，表示该颜色已被使用，不能被其他顶点使用。*/
                     }
                 }
+                delete [] list; /*删除动态分配的数组list，释放内存空间。*/
 
-                if (dist >= l - 2) {
-                    sub_e_size[l - 2] = 0;
-                    for (j = 0; j < C_size[e]; j++) {
-                        e_ = C[e][j];
-                        sub_e[l - 2][sub_e_size[l - 2]++] = e_;
-                        s = edges[e_].s;
-                        t = edges[e_].t;
-                        edges[e_].s = (col[s] > col[t]) ? s : t;
-                        edges[e_].t = (col[s] > col[t]) ? t : s;
-                        s = edges[e_].s;
-                        t = edges[e_].t;
+                sub_v_size[l - 2] = 0; /*将子图的顶点数组sub_v[l - 2]的大小重置为0。*/
+                dist = 0; /* 初始化变量dist为0，用于记录具有不同颜色的顶点数量。*/
 
-                        DAG_adj[s][DAG_deg[l - 2][s]++] = t;
+                for (j = 0; j < T_size[e]; j++) { /*循环遍历与边e相关的数组T[e]的所有元素。*/
+                    u = T[e][j]; /*获取数组T[e]的第j个元素，并将其存储在变量u中。*/
+                    sub_v[l - 2][sub_v_size[l - 2]++] = u; /* 将顶点u添加到子图的顶点数组sub_v[l - 2]中，并更新数组大小。*/
+                    if (!used[K][col[u]]) { /*检查顶点u的颜色是否已被使用过。*/
+                        used[K][col[u]] = true; /*如果颜色未被使用，将其标记为已使用。*/
+                        dist++; /*增加变量dist的值，表示找到一个具有不同颜色的顶点。*/
                     }
-
-                    EBBkC_plus_plus(l - 2, cliques);
                 }
 
-                for (j = 0; j < T_size[e]; j++) {
-                    u = T[e][j];
-                    used[K][col[u]] = false;
+                if (dist >= l - 2) { /*检查具有不同颜色的顶点数量是否大于等于l - 2。*/
+                    sub_e_size[l - 2] = 0; /*将子图的边数组sub_e[l - 2]的大小重置为0。*/
+                    for (j = 0; j < C_size[e]; j++) { /*循环遍历与边e相关的数组C[e]的所有元素。*/
+                        e_ = C[e][j]; /*获取数组C[e]的第j个元素，并将其存储在变量e_中。*/
+                        sub_e[l - 2][sub_e_size[l - 2]++] = e_; /*将边e_添加到子图的边数组sub_e[l - 2]中，并更新数组大小。*/
+                        s = edges[e_].s; /*获取边e_的起点，并将其存储在变量s中。 */
+                        t = edges[e_].t; /*获取边e_的终点，并将其存储在变量t中。*/
+                        edges[e_].s = (col[s] > col[t]) ? s : t; /*它检查s的颜色是否大于t的颜色。如果col[s]大于col[t]，则边e_的起点保持不变为s；否则，将边e_的起点设置为t。*/
+                        edges[e_].t = (col[s] > col[t]) ? t : s; /*与上一句相反，它检查s的颜色是否小于或等于t的颜色。如果col[s]大于col[t]，则边e_的终点设置为t；否则，边e_的终点设置为s*/
+                        s = edges[e_].s; /*重新获取边e_更新后的起点，并将其存储在变量s中。*/
+                        t = edges[e_].t; /*重新获取边e_更新后的终点，并将其存储在变量t中。*/
+
+                        DAG_adj[s][DAG_deg[l - 2][s]++] = t; /*在有向无环图（DAG）的邻接矩阵中添加从顶点s到顶点t的边，并更新顶点s的度。*/
+                    }
+
+                    EBBkC_plus_plus(l - 2, cliques); /*这行代码是一个递归调用，调用了函数EBBkC_plus_plus并将l - 2和cliques作为参数传递给它。*/
+                }
+
+                for (j = 0; j < T_size[e]; j++) { /*循环，用于重置used数组中的某些值。*/
+                    u = T[e][j]; /*循环遍历与边e相关的数组T[e]的所有元素，*/
+                    used[K][col[u]] = false; /*并将每个元素对应的颜色在used数组中的值设置为false，表示该颜色已被释放或未被使用。*/
                 }
             }
         }
@@ -776,130 +776,132 @@ void EBBkC_Graph_t::EBBkC_plus_plus(int l, unsigned long long *cliques) {
         return;
     }
 
-    if (l == 2) {
-        for (i = 0; i < sub_v_size[l]; i++) {
-            u = sub_v[l][i];
+    if (l == 2) { /*如果 l 等于 2，则执行以下的代码块  */
+        for (i = 0; i < sub_v_size[l]; i++) { /*循环遍历子图的所有顶点。*/
+            u = sub_v[l][i]; /*从sub_v数组中获取对应的顶点u  */
 
-            for (j = 0; j < DAG_deg[l][u]; j++) {
-                (*cliques)++;
+            for (j = 0; j < DAG_deg[l][u]; j++) { /*对于顶点u，开始一个循环，从0开始，直到小于DAG_deg[l][u]的值*/
+                (*cliques)++; /*cliques指针指向的值增加1，表示找到一个团或子结构  */
             }
         }
 
         return;
     }
 
-    if (l == 3) {
+    if (l == 3) { /*当 l 等于 3 时，执行以下的代码块  */
 
-        for (i = 0; i < sub_v_size[l]; i++) {
-            u = sub_v[l][i];
+        for (i = 0; i < sub_v_size[l]; i++) { /*遍历子图的所有顶点 */
+            u = sub_v[l][i]; /*获取当前子图的顶点 u  */
 
-            if (col[u] < l) continue;
+            if (col[u] < l) continue; /*如果顶点 u 的颜色小于 l，则跳过此次循环*/
 
-            for (j = 0; j < DAG_deg[l][u]; j++) {
-                v = DAG_adj[u][j];
-                lab[v] = l - 1;
+            for (j = 0; j < DAG_deg[l][u]; j++) { /*遍历 u 在 DAG 中的邻居。*/
+                v = DAG_adj[u][j]; /*获取 u 的邻居 v */
+                lab[v] = l - 1; /*将 v 的标签设置为 l-1  */
             }
 
-            for (j = 0; j < DAG_deg[l][u]; j++) {
-                v = DAG_adj[u][j];
+            for (j = 0; j < DAG_deg[l][u]; j++) { /*再次遍历 u 在 DAG 中的邻居 */
+                v = DAG_adj[u][j]; /*获取 u 的邻居 v 。*/
 
-                if (col[v] < l - 1) continue;
+                if (col[v] < l - 1) continue; /*如果顶点 v 的颜色小于 l-1，则跳过此次循环。*/
 
-                for (k = 0; k < DAG_deg[l][v]; k++) {
-                    w = DAG_adj[v][k];
-                    if (lab[w] == l - 1) (*cliques)++;
+                for (k = 0; k < DAG_deg[l][v]; k++) { /*遍历 v 在 DAG 中的邻居。*/
+                    w = DAG_adj[v][k]; /*获取 v 的邻居 w。*/
+                    if (lab[w] == l - 1) (*cliques)++; /*如果 w 的标签为 l-1，则团的数量增加1。*/
                 }
             }
 
-            for (j = 0; j < DAG_deg[l][u]; j++) {
-                v = DAG_adj[u][j];
-                lab[v] = l;
+            for (j = 0; j < DAG_deg[l][u]; j++) { /*最后遍历一次 u 在 DAG 中的邻居。*/
+                v = DAG_adj[u][j]; /*获取 u 的邻居 v*/
+                lab[v] = l; /*将 v 的标签重置为 l  */
             }
         }
 
         return;
     }
 
-    if (can_terminate(l, cliques)) {
-        return;
+    if (can_terminate(l, cliques)) { /*如果可以终止条件满足，则执行以下代码  */
+        return; /*直接返回，结束当前函数。*/
     }
 
-    for (i = 0; i < sub_v_size[l]; i++) {
-        u = sub_v[l][i];
+    for (i = 0; i < sub_v_size[l]; i++) { /*遍历子图的所有顶点。*/
+        u = sub_v[l][i]; /*获取当前子图的顶点 u  */
 
-        if (col[u] < l) continue;
+        if (col[u] < l) continue; /*如果顶点 u 的颜色小于 l，则跳过此次循环  */
 
-        sub_v_size[l - 1] = 0;
-        dist = 0;
+        sub_v_size[l - 1] = 0; /*将子图 l-1 的大小重置为0 */
+        dist = 0; /*初始化距离为0  */
 
-        for (j = 0; j < DAG_deg[l][u]; j++) {
-            v = DAG_adj[u][j];
-            lab[v] = l - 1;
-            sub_v[l - 1][sub_v_size[l - 1]++] = v;
-            DAG_deg[l - 1][v] = 0;
-            G_deg[l - 1][v] = 0;
+        for (j = 0; j < DAG_deg[l][u]; j++) { /*遍历 u 在 DAG 中的邻居  */
+            v = DAG_adj[u][j]; /*获取 u 的邻居 v  */
+            lab[v] = l - 1; /*将 v 的标签设置为 l-1  */
+            sub_v[l - 1][sub_v_size[l - 1]++] = v; /*将 v 加入到子图 l-1 中，并更新子图 l-1 的大小*/
+            DAG_deg[l - 1][v] = 0; /*将 v 在 DAG 中 l-1 层的度重置为0*/
+            G_deg[l - 1][v] = 0; /*将 v 在 G 中 l-1 层的度重置为0  */
 
-            if (!used[l][col[v]]) {
-                used[l][col[v]] = true;
-                dist++;
+            if (!used[l][col[v]]) { /*如果 v 的颜色在 used 数组中的对应位置为 false  */
+                used[l][col[v]] = true; /*则将 used 数组中 v 的颜色对应位置设置为 true  */
+                dist++; /*距离增加1  */
             }
         }
 
-        if (dist >= l - 1) {
+        if (dist >= l - 1) { /*如果距离大于或等于 l-1，则执行以下代码块  */
 
-            sub_e_size[l - 1] = 0;
-            for (j = 0; j < sub_v_size[l - 1]; j++) {
-                v = sub_v[l - 1][j];
+            sub_e_size[l - 1] = 0; /*将子图 l-1 的边的大小重置为0  */
+            for (j = 0; j < sub_v_size[l - 1]; j++) { /*遍历子图 l-1 的所有顶点  */
+                v = sub_v[l - 1][j]; /*获取当前子图 l-1 的顶点 v  */
 
-                end = DAG_deg[l][v];
-                for (k = 0; k < end; k++) {
-                    w = DAG_adj[v][k];
-                    if (lab[w] == l - 1) {
-                        DAG_deg[l - 1][v]++;
-                        sub_e_size[l - 1]++;
+                end = DAG_deg[l][v]; /*获取 v 在 DAG 中 l 层的度，并将其赋值给 end */
+                for (k = 0; k < end; k++) { /*遍历 v 在 DAG 中的邻居  */
+                    w = DAG_adj[v][k]; /*获取 v 的邻居 w  */
+                    if (lab[w] == l - 1) { /*如果 w 的标签等于 l-1 。*/
+                        DAG_deg[l - 1][v]++; /*将 v 在 DAG 中 l-1 层的度增加1  */
+                        sub_e_size[l - 1]++; /*子图 l-1 的边的大小增加1 */
 
                         // just for early-termination
-                        G_deg[l - 1][v]++;
-                        G_deg[l - 1][w]++;
+                        G_deg[l - 1][v]++; /*将 v 在 G 中 l-1 层的度增加1（仅用于早期终止）*/
+                        G_deg[l - 1][w]++; /*将 w 在 G 中 l-1 层的度增加1（仅用于早期终止）*/
 
                     } else {
-                        DAG_adj[v][k--] = DAG_adj[v][--end];
-                        DAG_adj[v][end] = w;
+                        DAG_adj[v][k--] = DAG_adj[v][--end]; /*将 DAG_adj 数组中 v 的邻居 w 替换为其后面的邻居  */
+                        DAG_adj[v][end] = w; /*将 w 放在 DAG_adj 数组中 v 的邻居的末尾  */
                     }
                 }
             }
 
-            EBBkC_plus_plus(l - 1, cliques);
+            EBBkC_plus_plus(l - 1, cliques); /*调用 EBBkC_plus_plus 函数，传入参数 l-1 和 cliques  */
         }
 
-        for (j = 0; j < sub_v_size[l - 1]; j++) {
-            v = sub_v[l - 1][j];
-            lab[v] = l;
-            used[l][col[v]] = false;
+        for (j = 0; j < sub_v_size[l - 1]; j++) { /*遍历子图 l-1 的所有顶点  */
+            v = sub_v[l - 1][j]; /*获取子图 l-1 的当前顶点 v */
+            lab[v] = l; /*将 v 的标签设置为 l  */
+            used[l][col[v]] = false; /*将 used 数组中，索引为 l、col[v] 的元素设置为 false*/
         }
     }
 }
 
 
-void EBBkC_Comb_list(int *list, int list_size, int start, int picked, int k, unsigned long long *cliques) {
-    if (picked == k) {
-        (*cliques)++;
+void EBBkC_Comb_list(int *list, int list_size, int start, int picked, int k, unsigned long long *cliques) { 
+    /*用于计算从给定列表中选取k个元素的组合数。这是一种基于递归的方法。*/
+    if (picked == k) { /*检查是否已选取的元素数量等于需要的元素数量。*/
+        (*cliques)++; /*如果上述条件为真，则增加cliques所指向的值。这实际上是在计数符合条件的组合数。*/
         return;
     }
 
-    for (int i = start; i < list_size; i++) {
-        EBBkC_Comb_list(list, list_size, i + 1, picked + 1, k, cliques);
+    for (int i = start; i < list_size; i++) { /*从start开始遍历列表，直到list_size。*/
+        EBBkC_Comb_list(list, list_size, i + 1, picked + 1, k, cliques); /*这是函数的递归调用。每次循环时，它都会调用自身，但是会更新一些参数：
+        start被设置为i + 1，意味着下一次递归调用将从当前索引的下一个位置开始。picked被增加1，表示已经选取了一个额外的元素。*/
     }
 }
 
 void EBBkC_Graph_t::list_in_plex(int start, int p, int q, unsigned long long *cliques) {
-    if (F_size < q) return;
+    if (F_size < q) return; /*如果F_size小于q，则直接返回，不执行后续操作 */
 
     if (p == 0) {
-        if (q > F_size - q)
-            EBBkC_Comb_list(F, F_size, 0, 0, F_size - q, cliques);
+        if (q > F_size - q) 
+            EBBkC_Comb_list(F, F_size, 0, 0, F_size - q, cliques); /*调用EBBkC_Comb_list函数*/
         else
-            EBBkC_Comb_list(F, F_size, 0, 0, q, cliques);
+            EBBkC_Comb_list(F, F_size, 0, 0, q, cliques); /*否则调用EBBkC_Comb_list函数，参数为F, F_size, 0, 0, q和cliques  */
         return;
     }
 
